@@ -580,6 +580,10 @@ class SimpleDB {
     findUser(email) {
         return this.users.find(user => user.email === email);
     }
+
+    findUserById(userId) {
+        return this.users.find(user => user.id === userId);
+    }
     
     createUser(userData) {
         const newUser = {
@@ -592,13 +596,25 @@ class SimpleDB {
         return newUser;
     }
     
-    createApplication(userId, cardId, approvalOdds) {
+    createApplication(userId, cardId, approvalOdds, userCreditScore = null) {
+        const card = this.creditCards.find(c => c.id === cardId);
+        const user = this.findUserById(userId);
+        const creditScore = userCreditScore || (user ? user.creditScore : 300);
+        
+        let status = 'declined';
+        
+        if (creditScore < card.creditRequired) {
+            status = 'declined';
+        } else {
+            status = this.determineApprovalStatus(approvalOdds);
+        }
+        
         const application = {
             id: this.applications.length + 1,
             userId,
             cardId,
             approvalOdds,
-            status: this.determineApprovalStatus(approvalOdds),
+            status: status,
             date: new Date().toISOString()
         };
         this.applications.push(application);
@@ -615,7 +631,7 @@ class SimpleDB {
         const now = new Date();
         const hoursDifference = (now - lastApplicationTime) / (1000 * 60 * 60);
         
-        return hoursDifference >= 12;
+        return hoursDifference >= 0;
     }
 
     getReapplyWaitTime(userId, cardId) {
@@ -627,13 +643,14 @@ class SimpleDB {
         const now = new Date();
         const hoursDifference = (now - lastApplicationTime) / (1000 * 60 * 60);
         
-        if (hoursDifference >= 12) return 0;
+        if (hoursDifference >= 0) return 0;
         return Math.ceil(12 - hoursDifference);
     }
     
     determineApprovalStatus(approvalOdds) {
-        const random = Math.random() * 100;
-        if (random < approvalOdds) {
+        const baseRandom = Math.random() * 100;
+        
+        if (baseRandom < approvalOdds) {
             return 'approved';
         } else {
             return 'declined';
