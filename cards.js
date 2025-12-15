@@ -1,4 +1,4 @@
- function calculateApprovalOdds(card) {
+function calculateApprovalOdds(card) {
     if (!currentUser) return 50;
     
     let score = 50;
@@ -44,9 +44,13 @@ function displayCards(cards, containerId) {
         const oddsColor = odds > 70 ? '#28a745' : odds > 50 ? '#ffc107' : '#dc3545';
         
         const latestApplication = userApplications.find(app => app.cardId === card.id);
+        const creditScoreTooLow = currentUser && currentUser.creditScore < card.creditRequired;
+        
         let buttonHTML = '';
         
-        if (!latestApplication) {
+        if (creditScoreTooLow) {
+            buttonHTML = `<button class="btn" style="padding: 8px 15px; background: #999; cursor: not-allowed; opacity: 0.5;" disabled>❌ Credit Score Too Low (${card.creditRequired}+ required)</button>`;
+        } else if (!latestApplication) {
             buttonHTML = `<button class="btn" style="padding: 8px 15px;" onclick="applyForCard(${card.id})">Apply Now</button>`;
         } else if (latestApplication.status === 'approved') {
             buttonHTML = `<button class="btn" style="padding: 8px 15px; opacity: 0.8;" onclick="cancelApplication(${card.id})">✓ Approved - Cancel</button>`;
