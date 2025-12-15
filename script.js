@@ -68,7 +68,7 @@ function loadApplications() {
     
     if (approvedApps.length > 0) {
         html += '<div style="margin-bottom: 40px;">';
-        html += '<h3 style="color: #28a745; margin-bottom: 20px;">✅ Approved (' + approvedApps.length + ')</h3>';
+        html += '<h3 style="color: white; margin-bottom: 20px;">✅ Approved Cards (' + approvedApps.length + ')</h3>';
         html += approvedApps.map(app => {
             const card = db.creditCards.find(c => c.id === app.cardId);
             if (!card) return '';
@@ -77,7 +77,7 @@ function loadApplications() {
                 <div class="card" style="margin-bottom: 15px; border-left: 5px solid #28a745;">
                     <div class="card-body">
                         <h3 style="margin: 0 0 10px; color: #28a745;">🎉 ${card.name}</h3>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; color: #333;">
                             <div>
                                 <strong>Issuer:</strong><br>
                                 ${card.issuer}
@@ -95,11 +95,14 @@ function loadApplications() {
                                 <span style="color: #28a745; font-weight: bold;">${app.approvalOdds}%</span>
                             </div>
                         </div>
-                        <div>
-                            <strong>Status:</strong>
-                            <span style="padding: 4px 12px; background: #d4edda; color: #28a745; border-radius: 20px; margin-left: 10px; font-weight: bold;">
-                                APPROVED ✓
-                            </span>
+                        <div style="display: flex; gap: 10px; margin-top: 15px; align-items: center;">
+                            <div style="flex: 1;">
+                                <strong style="color: #333;">Status:</strong>
+                                <span style="padding: 4px 12px; background: #d4edda; color: #28a745; border-radius: 20px; margin-left: 10px; font-weight: bold;">
+                                    APPROVED ✓
+                                </span>
+                            </div>
+                            <button class="btn" style="padding: 8px 15px; width: auto; background: #dc3545;" onclick="cancelApplicationFromList(${card.id})">Cancel Card</button>
                         </div>
                     </div>
                 </div>
@@ -110,16 +113,19 @@ function loadApplications() {
     
     if (declinedApps.length > 0) {
         html += '<div style="margin-bottom: 40px;">';
-        html += '<h3 style="color: #dc3545; margin-bottom: 20px;">❌ Declined (' + declinedApps.length + ')</h3>';
+        html += '<h3 style="color: white; margin-bottom: 20px;">❌ Declined Applications (' + declinedApps.length + ')</h3>';
         html += declinedApps.map(app => {
             const card = db.creditCards.find(c => c.id === app.cardId);
             if (!card) return '';
             
+            const canReapply = db.canReapply(currentUser.id, card.id);
+            const waitHours = canReapply ? 0 : db.getReapplyWaitTime(currentUser.id, card.id);
+            
             return `
-                <div class="card" style="margin-bottom: 15px; border-left: 5px solid #dc3545; opacity: 0.8;">
+                <div class="card" style="margin-bottom: 15px; border-left: 5px solid #dc3545; opacity: 0.9;">
                     <div class="card-body">
                         <h3 style="margin: 0 0 10px; color: #666;">📄 ${card.name}</h3>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; color: #333;">
                             <div>
                                 <strong>Issuer:</strong><br>
                                 ${card.issuer}
@@ -137,11 +143,14 @@ function loadApplications() {
                                 <span style="color: #dc3545; font-weight: bold;">${app.approvalOdds}%</span>
                             </div>
                         </div>
-                        <div>
-                            <strong>Status:</strong>
-                            <span style="padding: 4px 12px; background: #f8d7da; color: #dc3545; border-radius: 20px; margin-left: 10px; font-weight: bold;">
-                                DECLINED ✗
-                            </span>
+                        <div style="display: flex; gap: 10px; margin-top: 15px; align-items: center;">
+                            <div style="flex: 1;">
+                                <strong style="color: #333;">Status:</strong>
+                                <span style="padding: 4px 12px; background: #f8d7da; color: #dc3545; border-radius: 20px; margin-left: 10px; font-weight: bold;">
+                                    DECLINED ${canReapply ? '✗' : '⏳'}
+                                </span>
+                            </div>
+                            ${canReapply ? `<button class="btn" style="padding: 8px 15px; width: auto; background: #ff9800;" onclick="reapplyFromList(${card.id})">Try Again</button>` : `<button class="btn" style="padding: 8px 15px; width: auto; background: #ccc; cursor: not-allowed; opacity: 0.6;" disabled>Try in ${waitHours > 0 ? waitHours : 12}h</button>`}
                         </div>
                     </div>
                 </div>
@@ -174,6 +183,55 @@ function updateProfile(event) {
     showMessage('Profile updated!', 'success');
 }
 
+function cancelApplicationFromList(cardId) {
+    if (!currentUser) return;
+    
+    const card = db.creditCards.find(c => c.id === cardId);
+    if (!card) return;
+    
+    const userApplications = db.getUserApplications(currentUser.id);
+    const applicationToRemove = userApplications.find(app => app.cardId === cardId && app.status === 'approved');
+    
+    if (applicationToRemove) {
+        const index = db.applications.indexOf(applicationToRemove);
+        if (index > -1) {
+            db.applications.splice(index, 1);
+            db.save();
+            showMessage(`Cancelled ${card.name}`, 'success');
+            updateUserInfo();
+            loadDashboardCards();
+            loadApplications();
+        }
+    }
+}
+
+function reapplyFromList(cardId) {
+    if (!currentUser) return;
+    
+    const card = db.creditCards.find(c => c.id === cardId);
+    if (!card) return;
+    
+    const canReapply = db.canReapply(currentUser.id, card.id);
+    if (!canReapply) {
+        const waitHours = db.getReapplyWaitTime(currentUser.id, card.id);
+        showMessage(`Please wait ${waitHours} more hours before reapplying`, 'error');
+        return;
+    }
+    
+    const odds = calculateApprovalOdds(card);
+    const application = db.createApplication(currentUser.id, cardId, odds);
+    
+    if (application.status === 'approved') {
+        showMessage(`✅ Approved! You got ${card.name}!`, 'success');
+    } else {
+        showMessage(`❌ Declined for ${card.name}. You can try again in 12 hours!`, 'error');
+    }
+    
+    updateUserInfo();
+    loadDashboardCards();
+    loadApplications();
+}
+
 window.addEventListener('load', () => {
     const savedUser = localStorage.getItem('currentUser');
     if (savedUser) {
@@ -185,6 +243,12 @@ window.addEventListener('load', () => {
             showAuth();
         }
     }
+    
+    window.showPage = showPage;
+    window.updateProfile = updateProfile;
+    window.cancelApplicationFromList = cancelApplicationFromList;
+    window.reapplyFromList = reapplyFromList;
+});
     
     window.showPage = showPage;
     window.updateProfile = updateProfile;
