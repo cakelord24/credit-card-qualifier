@@ -62,27 +62,36 @@ async function handleLogin(event) {
 async function handleSignup(event) {
     event.preventDefault();
     
-    const email = document.getElementById('signupEmail').value;
+    const email = document.getElementById('signupEmail').value.trim();
     const password = document.getElementById('signupPassword').value;
+    const firstName = document.getElementById('signupFirstName').value.trim();
+    const lastName = document.getElementById('signupLastName').value.trim();
+    const annualIncome = document.getElementById('signupIncome').value;
+    const creditScore = document.getElementById('signupCreditScore').value;
+    
+    if (!email || !password || !firstName || !lastName || !annualIncome || !creditScore) {
+        showMessage('Please fill in all fields', 'error');
+        return;
+    }
     
     if (password.length < 6) {
         showMessage('Password must be at least 6 characters', 'error');
         return;
     }
     
-    const userData = {
-        email: email,
-        password: await db.hashPassword(password),
-        firstName: document.getElementById('signupFirstName').value,
-        lastName: document.getElementById('signupLastName').value,
-        annualIncome: parseInt(document.getElementById('signupIncome').value),
-        creditScore: parseInt(document.getElementById('signupCreditScore').value)
-    };
-    
-    if (db.findUser(userData.email)) {
+    if (db.findUser(email)) {
         showMessage('User with this email already exists', 'error');
         return;
     }
+    
+    const userData = {
+        email: email,
+        password: await db.hashPassword(password),
+        firstName: firstName,
+        lastName: lastName,
+        annualIncome: parseInt(annualIncome),
+        creditScore: parseInt(creditScore)
+    };
     
     currentUser = db.createUser(userData);
     showApp();
@@ -118,7 +127,4 @@ function showAuth() {
 window.switchTab = switchTab;
 window.handleLogin = handleLogin;
 window.handleSignup = handleSignup;
-window.logout = logout;
-window.handleSignup = handleSignup;
-window.resendVerificationEmail = resendVerificationEmail;
 window.logout = logout;
