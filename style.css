@@ -131,6 +131,11 @@ body::before {
     outline: none;
 }
 
+.form-input-signup.error {
+    border-color: #dc3545 !important;
+    background-color: #fff5f5;
+}
+
 .btn {
     display: inline-block;
     padding: 14px 28px;
