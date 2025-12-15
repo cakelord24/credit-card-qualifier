@@ -66,20 +66,54 @@ async function handleSignup(event) {
     const password = document.getElementById('signupPassword').value;
     const firstName = document.getElementById('signupFirstName').value.trim();
     const lastName = document.getElementById('signupLastName').value.trim();
+    const dob = document.getElementById('signupDOB').value;
     const annualIncome = document.getElementById('signupIncome').value;
     const creditScore = document.getElementById('signupCreditScore').value;
     
-    if (!email || !password || !firstName || !lastName || !annualIncome || !creditScore) {
-        showMessage('Please fill in all fields', 'error');
+    const emptyFields = [];
+    
+    if (!firstName) emptyFields.push('signupFirstName');
+    if (!lastName) emptyFields.push('signupLastName');
+    if (!email) emptyFields.push('signupEmail');
+    if (!dob) emptyFields.push('signupDOB');
+    if (!password) emptyFields.push('signupPassword');
+    if (!annualIncome) emptyFields.push('signupIncome');
+    if (!creditScore) emptyFields.push('signupCreditScore');
+    
+    if (emptyFields.length > 0) {
+        emptyFields.forEach(fieldId => {
+            document.getElementById(fieldId).classList.add('error');
+        });
+        showMessage('Please fill out all required fields marked in red', 'error');
+        return;
+    }
+    
+    document.querySelectorAll('.form-input-signup').forEach(field => {
+        field.classList.remove('error');
+    });
+    
+    const birthDate = new Date(dob);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+    }
+    
+    if (age < 18) {
+        document.getElementById('signupDOB').classList.add('error');
+        showMessage('You must be at least 18 years old to sign up', 'error');
         return;
     }
     
     if (password.length < 6) {
+        document.getElementById('signupPassword').classList.add('error');
         showMessage('Password must be at least 6 characters', 'error');
         return;
     }
     
     if (db.findUser(email)) {
+        document.getElementById('signupEmail').classList.add('error');
         showMessage('User with this email already exists', 'error');
         return;
     }
@@ -89,6 +123,7 @@ async function handleSignup(event) {
         password: await db.hashPassword(password),
         firstName: firstName,
         lastName: lastName,
+        dateOfBirth: dob,
         annualIncome: parseInt(annualIncome),
         creditScore: parseInt(creditScore)
     };
