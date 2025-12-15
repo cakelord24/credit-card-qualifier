@@ -1,18 +1,24 @@
 function showPage(page) {
-    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-    document.querySelectorAll('.nav-btn').forEach(btn => {
-        if (btn.textContent.includes(page.charAt(0).toUpperCase() + page.slice(1).replace('cards', 'Cards'))) {
-            btn.classList.add('active');
-        }
+    const allPages = document.querySelectorAll('.page');
+    allPages.forEach(p => {
+        p.style.display = 'none';
+        p.classList.remove('active');
     });
-    
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById(page + 'Page').classList.add('active');
-    
+
+    const activePage = document.getElementById(page + 'Page');
+    activePage.style.display = 'block';
+    activePage.classList.add('active');
+
+    const allNavButtons = document.querySelectorAll('.nav-btn');
+    allNavButtons.forEach(button => button.classList.remove('active'));
+    document.querySelector(`[onclick="showPage('${page}')"]`)?.classList.add('active');
+
     if (page === 'dashboard') {
         loadDashboardCards();
     } else if (page === 'applications') {
         loadApplications();
+    } else if (page === 'profile') {
+        loadRewardsCardDropdown();
     }
 }
 
@@ -29,9 +35,9 @@ function updateUserInfo() {
     document.getElementById('statScore').textContent = currentUser.creditScore;
     document.getElementById('statIncome').textContent = '$' + currentUser.annualIncome.toLocaleString();
     
-    const apps = db.getUserApplications(currentUser.id);
-    document.getElementById('statApps').textContent = apps.length;
-    document.getElementById('profileApps').textContent = apps.length;
+    const userApplications = db.getUserApplications(currentUser.id);
+    document.getElementById('statApps').textContent = userApplications.length;
+    document.getElementById('profileApps').textContent = userApplications.length;
 }
 
 function loadApplications() {
@@ -45,22 +51,22 @@ function loadApplications() {
             <div style="text-align: center; padding: 40px; color: #666;">
                 <div style="font-size: 48px; margin-bottom: 20px;">📄</div>
                 <h3>No Applications Yet</h3>
-                <p>You haven't applied for any cards yet.</p>
-                <button class="btn" onclick="showPage('cards')">Find Cards to Apply</button>
+                <p>You haven't applied yet.</p>
+                <button class="btn" onclick="showPage('cards')">Find Cards</button>
             </div>
         `;
         return;
     }
     
-    const approved = applications.filter(app => app.status === 'approved');
-    const declined = applications.filter(app => app.status === 'declined');
+    const approvedApps = applications.filter(app => app.status === 'approved');
+    const declinedApps = applications.filter(app => app.status === 'declined');
     
     let html = '';
     
-    if (approved.length > 0) {
+    if (approvedApps.length > 0) {
         html += '<div style="margin-bottom: 40px;">';
-        html += '<h3 style="color: #28a745; margin-bottom: 20px;">✅ Approved Cards (' + approved.length + ')</h3>';
-        html += approved.map(app => {
+        html += '<h3 style="color: #28a745; margin-bottom: 20px;">✅ Approved (' + approvedApps.length + ')</h3>';
+        html += approvedApps.map(app => {
             const card = db.creditCards.find(c => c.id === app.cardId);
             if (!card) return '';
             
@@ -99,10 +105,10 @@ function loadApplications() {
         html += '</div>';
     }
     
-    if (declined.length > 0) {
+    if (declinedApps.length > 0) {
         html += '<div style="margin-bottom: 40px;">';
-        html += '<h3 style="color: #dc3545; margin-bottom: 20px;">❌ Declined Applications (' + declined.length + ')</h3>';
-        html += declined.map(app => {
+        html += '<h3 style="color: #dc3545; margin-bottom: 20px;">❌ Declined (' + declinedApps.length + ')</h3>';
+        html += declinedApps.map(app => {
             const card = db.creditCards.find(c => c.id === app.cardId);
             if (!card) return '';
             
@@ -152,7 +158,7 @@ function updateProfile(event) {
     const creditScore = parseInt(document.getElementById('profileCreditScore').value);
     
     if (creditScore < 300 || creditScore > 850) {
-        showMessage('Credit score must be between 300 and 850', 'error');
+        showMessage('Credit score 300-850 only', 'error');
         return;
     }
     
@@ -161,8 +167,8 @@ function updateProfile(event) {
     currentUser.creditScore = creditScore;
     
     updateUserInfo();
-    loadDashboardCards(); 
-    showMessage('Profile updated successfully!', 'success');
+    loadDashboardCards();
+    showMessage('Profile updated!', 'success');
 }
 
 window.addEventListener('load', () => {
@@ -171,8 +177,8 @@ window.addEventListener('load', () => {
         try {
             currentUser = JSON.parse(savedUser);
             showApp();
-        } catch (e) {
-            console.error('Error loading saved user:', e);
+        } catch (error) {
+            console.error('Error loading user:', error);
             showAuth();
         }
     }
