@@ -1,4 +1,4 @@
-function calculateApprovalOdds(card) {
+ function calculateApprovalOdds(card) {
     if (!currentUser) return 50;
     
     let score = 50;
@@ -197,14 +197,16 @@ function applyForCard(cardId) {
     }
     
     const userApplications = db.getUserApplications(currentUser.id);
-    const oldDeclinedApplication = userApplications.find(app => app.cardId === cardId && app.status === 'declined');
+    const allPreviousApplications = userApplications.filter(app => app.cardId === cardId);
     
-    if (oldDeclinedApplication) {
-        const index = db.applications.indexOf(oldDeclinedApplication);
-        if (index > -1) {
-            db.applications.splice(index, 1);
-            db.save();
-        }
+    if (allPreviousApplications.length > 0) {
+        allPreviousApplications.forEach(oldApp => {
+            const index = db.applications.indexOf(oldApp);
+            if (index > -1) {
+                db.applications.splice(index, 1);
+            }
+        });
+        db.save();
     }
     
     const odds = calculateApprovalOdds(card);
