@@ -58,22 +58,6 @@
                 </div>
                 <button type="submit" class="btn">Create Account</button>
             </form>
-            
-            <form id="verifyForm" class="auth-form" style="display: none;">
-                <div style="text-align: center;">
-                    <div style="font-size: 48px; margin-bottom: 20px;">📧</div>
-                    <h2 style="color: #667eea; margin-bottom: 10px;">Verify Your Email</h2>
-                    <p id="verifyMessage" style="color: #666; margin-bottom: 20px;">
-                        We sent a verification link to <span id="verifyEmail" style="font-weight: bold;">your email</span>. 
-                        Click the link in your email to verify your account.
-                    </p>
-                    <div style="background: #f0f4ff; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
-                        <p style="color: #667eea; font-weight: 600; margin: 0;">⏱️ Verification Link Expires In 24 Hours</p>
-                    </div>
-                </div>
-                <button type="button" class="btn" onclick="resendVerificationEmail()">Resend Verification Email</button>
-                <button type="button" class="btn btn-secondary" onclick="switchTab('login')" style="margin-top: 10px;">Back to Login</button>
-            </form>
         </div>
     </div>
     
@@ -127,45 +111,45 @@
                 </div>
             </div>
             
-<div id="cardsPage" class="page">
-    <h2>🔍 Find Your Perfect Card</h2>
-    <p>Filter cards and see your approval odds</p>
-    
-    <div class="form-group" style="margin-bottom: 20px; max-width: 500px;">
-        <label>Search Cards</label>
-        <div style="display: flex; gap: 10px;">
-            <input type="text" id="cardSearch" class="form-control" placeholder="Search by card name, issuer, or rewards..." style="flex: 1;">
-            <button type="button" class="btn" onclick="findCards()" style="width: auto; padding: 12px 20px;">Search</button>
-        </div>
-    </div>
-    
-    <div class="filter-panel">
-        <div class="form-group">
-            <label>Maximum Annual Fee: $<span id="feeValue">500</span></label>
-            <input type="range" id="maxFee" min="0" max="1000" value="500" class="range-slider" oninput="document.getElementById('feeValue').textContent = this.value">
-        </div>
-        <div class="form-group">
-            <label>Card Type</label>
-            <select id="cardType" class="form-control">
-                <option value="">All Types</option>
-                <option value="travel">Travel Rewards</option>
-                <option value="cashback">Cash Back</option>
-                <option value="premium">Premium</option>
-                <option value="business">Business</option>
-                <option value="student">Student</option>
-                <option value="secured">Secured</option>
-                <option value="starter">Starter</option>
-                <option value="low_apr">Low APR</option>
-            </select>
-        </div>
-        <button class="btn" onclick="findCards()">Find Matching Cards</button>
-        <button class="btn btn-secondary" onclick="resetFilters()">Reset Filters</button>
-    </div>
-    
-    <h3>Found <span id="resultsCount">0</span> cards</h3>
-    <div id="cardsResults" class="cards-grid">
-    </div>
-</div>
+            <div id="cardsPage" class="page">
+                <h2>🔍 Find Your Perfect Card</h2>
+                <p>Filter cards and see your approval odds</p>
+                
+                <div class="form-group" style="margin-bottom: 20px; max-width: 500px;">
+                    <label>Search Cards</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="cardSearch" class="form-control" placeholder="Search by card name, issuer, or rewards..." style="flex: 1;">
+                        <button type="button" class="btn" onclick="findCards()" style="width: auto; padding: 12px 20px;">Search</button>
+                    </div>
+                </div>
+                
+                <div class="filter-panel">
+                    <div class="form-group">
+                        <label>Maximum Annual Fee: $<span id="feeValue">500</span></label>
+                        <input type="range" id="maxFee" min="0" max="1000" value="500" class="range-slider" oninput="document.getElementById('feeValue').textContent = this.value">
+                    </div>
+                    <div class="form-group">
+                        <label>Card Type</label>
+                        <select id="cardType" class="form-control">
+                            <option value="">All Types</option>
+                            <option value="travel">Travel Rewards</option>
+                            <option value="cashback">Cash Back</option>
+                            <option value="premium">Premium</option>
+                            <option value="business">Business</option>
+                            <option value="student">Student</option>
+                            <option value="secured">Secured</option>
+                            <option value="starter">Starter</option>
+                            <option value="low_apr">Low APR</option>
+                        </select>
+                    </div>
+                    <button class="btn" onclick="findCards()">Find Matching Cards</button>
+                    <button class="btn btn-secondary" onclick="resetFilters()">Reset Filters</button>
+                </div>
+                
+                <h3>Found <span id="resultsCount">0</span> cards</h3>
+                <div id="cardsResults" class="cards-grid">
+                </div>
+            </div>
             
             <div id="applicationsPage" class="page">
                 <h2>📋 My Applications</h2>
@@ -183,48 +167,76 @@
             <div id="profilePage" class="page">
                 <h2>👤 My Profile</h2>
                 <p>Manage your financial information</p>
-                
-                <div style="background: white; padding: 30px; border-radius: 15px; max-width: 600px; margin-top: 20px;">
-                    <div style="text-align: center; margin-bottom: 30px;">
-                        <div style="font-size: 60px; color: #667eea;">👤</div>
-                        <h3 id="profileName">John Doe</h3>
-                        <p id="profileEmail"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="cca9a1ada5a08ca9b4ada1bca0a9e2afa3a1">[email&#160;protected]</a></p>
+            
+                <div class="profile-grid">
+                    <div class="profile-card">
+                        <div style="text-align:center; margin-bottom:30px;">
+                            <div style="font-size:60px; color:#667eea;">👤</div>
+                            <h3 id="profileName">User</h3>
+                            <p id="profileEmail">email@example.com</p>
+                        </div>
+            
+                        <form onsubmit="updateProfile(event)">
+                            <div class="form-group">
+                                <label>Annual Income ($)</label>
+                                <input type="number" id="profileIncome" min="0" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Credit Score</label>
+                                <input type="number" id="profileCreditScore" min="300" max="850" required>
+                            </div>
+                            <button type="submit" class="btn">Update Profile</button>
+                        </form>
+            
+                        <div class="profile-stats">
+                            <strong>Applications:</strong> <span id="profileApps">0</span><br>
+                            <strong>Cards Viewed:</strong> <span id="profileViews">0</span>
+                        </div>
                     </div>
-                    
-                    <form onsubmit="updateProfile(event)">
+            
+                    <div class="profile-card">
+                        <h3>💰 Rewards Calculator</h3>
+                        <p style="color:#666; margin-bottom:20px;">
+                            Select a card and estimate your yearly rewards
+                        </p>
+            
                         <div class="form-group">
-                            <label>Annual Income ($)</label>
-                            <input type="number" id="profileIncome" min="0" required>
+                            <label>Select Card</label>
+                            <select id="rewardsCardSelect" class="form-control">
+                                <option value="">Select a card</option>
+                            </select>
                         </div>
+            
                         <div class="form-group">
-                            <label>Credit Score</label>
-                            <input type="number" id="profileCreditScore" min="300" max="850" required>
+                            <label>Monthly Dining ($)</label>
+                            <input type="number" id="spendDining" value="300">
                         </div>
-                        <button type="submit" class="btn">Update Profile</button>
-                    </form>
-                    
-                    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
-                        <h4>📈 Profile Statistics</h4>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
-                            <div>
-                                <strong>Applications:</strong>
-                                <span id="profileApps">0</span>
-                            </div>
-                            <div>
-                                <strong>Cards Viewed:</strong>
-                                <span id="profileViews">0</span>
-                            </div>
+            
+                        <div class="form-group">
+                            <label>Monthly Groceries ($)</label>
+                            <input type="number" id="spendGroceries" value="400">
                         </div>
+            
+                        <div class="form-group">
+                            <label>Monthly Travel ($)</label>
+                            <input type="number" id="spendTravel" value="200">
+                        </div>
+            
+                        <div class="form-group">
+                            <label>Other Monthly Spending ($)</label>
+                            <input type="number" id="spendOther" value="500">
+                        </div>
+            
+                        <button class="btn" onclick="calculateRewards()">Calculate Rewards</button>
+            
+                        <div id="rewardsResult" style="margin-top:20px;"></div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js"></script>
-    <script src="firebase-config.js"></script>
     <script src="database.js"></script>
     <script src="auth.js"></script>
     <script src="cards.js"></script>
     <script src="script.js"></script>
+</body>
+</html>
