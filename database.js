@@ -615,7 +615,7 @@ class SimpleDB {
         const now = new Date();
         const hoursDifference = (now - lastApplicationTime) / (1000 * 60 * 60);
         
-        return hoursDifference >= 12;
+        return hoursDifference >= 0;
     }
 
     getReapplyWaitTime(userId, cardId) {
@@ -627,7 +627,7 @@ class SimpleDB {
         const now = new Date();
         const hoursDifference = (now - lastApplicationTime) / (1000 * 60 * 60);
         
-        if (hoursDifference >= 12) return 0;
+        if (hoursDifference >= 0) return 0;
         return Math.ceil(12 - hoursDifference);
     }
     
