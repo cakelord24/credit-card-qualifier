@@ -296,6 +296,17 @@ body::before {
     padding: 20px;
 }
 
+.card-header h3 {
+    color: white;
+    margin: 0;
+}
+
+.card-header p {
+    color: rgba(255, 255, 255, 0.9);
+    margin: 5px 0 0;
+    opacity: 1;
+}
+
 .card-body {
     padding: 20px;
     color: #333;
