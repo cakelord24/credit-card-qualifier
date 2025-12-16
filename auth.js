@@ -1,19 +1,6 @@
 let currentUser = null;
 
-function showAuth() {
-    document.getElementById('authScreen').classList.add('active');
-    document.getElementById('authScreen').classList.remove('hidden');
-    document.getElementById('appScreen').classList.add('hidden');
-    document.getElementById('appScreen').classList.remove('active');
-}
-
-function showApp() {
-    document.getElementById('authScreen').classList.remove('active');
-    document.getElementById('authScreen').classList.add('hidden');
-    document.getElementById('appScreen').classList.remove('hidden');
-    document.getElementById('appScreen').classList.add('active');
-    updateUserInfo();
-}
+const API_URL = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:3001';
 
 function switchTab(tab) {
     const allTabs = document.querySelectorAll('.auth-tab');
@@ -48,6 +35,21 @@ function showMessage(text, type = 'info') {
     }, 3000);
 }
 
+function showAuth() {
+    document.getElementById('authScreen').classList.add('active');
+    document.getElementById('authScreen').classList.remove('hidden');
+    document.getElementById('appScreen').classList.add('hidden');
+    document.getElementById('appScreen').classList.remove('active');
+}
+
+function showApp() {
+    document.getElementById('authScreen').classList.remove('active');
+    document.getElementById('authScreen').classList.add('hidden');
+    document.getElementById('appScreen').classList.remove('hidden');
+    document.getElementById('appScreen').classList.add('active');
+    updateUserInfo();
+}
+
 function logout() {
     currentUser = null;
     localStorage.removeItem('currentUser');
@@ -67,8 +69,7 @@ async function handleLogin(event) {
     }
     
     try {
-        
-        const response = await fetch(`/api/login`, {
+        const response = await fetch(`${API_URL}/api/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
@@ -156,8 +157,7 @@ async function handleSignup(event) {
     }
     
     try {
-        
-        const response = await fetch(`/api/signup`, {
+        const response = await fetch(`${API_URL}/api/signup`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -223,8 +223,7 @@ async function updateProfile(event) {
     }
     
     try {
-        
-        const response = await fetch(`/api/profile-update`, {
+        const response = await fetch(`${API_URL}/api/profile/update`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
