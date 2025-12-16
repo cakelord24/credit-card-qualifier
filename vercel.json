@@ -1,12 +1,10 @@
 {
-  "buildCommand": "npm install",
-  "env": {
-    "MONGODB_URI": "@mongodb_uri"
-  },
-  "functions": {
-    "api/index.js": {
-      "memory": 1024,
-      "maxDuration": 60
+  "buildCommand": "",
+  "outputDirectory": "public",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
-  }
+  ]
 }
