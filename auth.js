@@ -33,21 +33,6 @@ function showMessage(text, type = 'info') {
     }, 3000);
 }
 
-function showAuth() {
-    document.getElementById('authScreen').classList.add('active');
-    document.getElementById('authScreen').classList.remove('hidden');
-    document.getElementById('appScreen').classList.add('hidden');
-    document.getElementById('appScreen').classList.remove('active');
-}
-
-function showApp() {
-    document.getElementById('authScreen').classList.remove('active');
-    document.getElementById('authScreen').classList.add('hidden');
-    document.getElementById('appScreen').classList.remove('hidden');
-    document.getElementById('appScreen').classList.add('active');
-    updateUserInfo();
-}
-
 function logout() {
     currentUser = null;
     localStorage.removeItem('currentUser');
