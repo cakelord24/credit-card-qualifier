@@ -22,9 +22,6 @@ function showPage(page) {
     }
 }
 
-// Make functions globally available immediately
-window.showPage = showPage;
-
 function updateUserInfo() {
     if (!currentUser) return;
     
@@ -46,126 +43,80 @@ function updateUserInfo() {
     document.getElementById('profileViews').textContent = cardViewCount;
 }
 
-async function loadApplications() {
+function loadApplications() {
     if (!currentUser) return;
     
-    try {
-        const response = await fetch(`/api/applications?userId=${currentUser.id}`);
-        const applications = await response.json();
-        const container = document.getElementById('applicationsList');
-        
-        if (!applications || applications.length === 0) {
-            container.innerHTML = `
-                <div style="text-align: center; padding: 40px; color: #666;">
-                    <div style="font-size: 48px; margin-bottom: 20px;"><i class="fas fa-file"></i></div>
-                    <h3>No Applications Yet</h3>
-                    <p>You haven't applied for any cards yet.</p>
-                    <button class="btn" onclick="showPage('cards')">Find Cards to Apply</button>
+    const applications = db.getUserApplications(currentUser.id);
+    const container = document.getElementById('applicationsList');
+    
+    if (applications.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: #666;">
+                <div style="font-size: 48px; margin-bottom: 20px;">📄</div>
+                <h3>No Applications Yet</h3>
+                <p>You haven't applied yet.</p>
+                <button class="btn" onclick="showPage('cards')">Find Cards</button>
+            </div>
+        `;
+        return;
+    }
+    
+    const approvedApps = applications.filter(app => app.status === 'approved');
+    const declinedApps = applications.filter(app => app.status === 'declined');
+    
+    let html = '';
+    
+    if (approvedApps.length > 0) {
+        html += '<div style="margin-bottom: 40px;">';
+        html += '<h3 style="color: white; margin-bottom: 20px;">✅ Approved Cards (' + approvedApps.length + ')</h3>';
+        html += approvedApps.map(app => {
+            const card = db.creditCards.find(c => c.id === app.cardId);
+            if (!card) return '';
+            
+            return `
+                <div class="card" style="margin-bottom: 15px; border-left: 5px solid #28a745;">
+                    <div class="card-body">
+                        <h3 style="margin: 0 0 10px; color: #28a745;">🎉 ${card.name}</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; color: #333;">
+                            <div>
+                                <strong>Issuer:</strong><br>
+                                ${card.issuer}
+                            </div>
+                            <div>
+                                <strong>Applied:</strong><br>
+                                ${new Date(app.date).toLocaleDateString()}
+                            </div>
+                            <div>
+                                <strong>Annual Fee:</strong><br>
+                                $${card.annualFee}
+                            </div>
+                            <div>
+                                <strong>Approval Odds:</strong><br>
+                                <span style="color: #28a745; font-weight: bold;">${app.approvalOdds}%</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 10px; margin-top: 15px; align-items: center;">
+                            <div style="flex: 1;">
+                                <strong style="color: #333;">Status:</strong>
+                                <span style="padding: 4px 12px; background: #d4edda; color: #28a745; border-radius: 20px; margin-left: 10px; font-weight: bold;">
+                                    APPROVED ✓
+                                </span>
+                            </div>
+                            <button class="btn" style="padding: 8px 15px; width: auto; background: #dc3545;" onclick="cancelApplicationFromList(${card.id})">Cancel Card</button>
+                        </div>
+                    </div>
                 </div>
             `;
-            return;
-        }
-        
-        const approvedApps = applications.filter(app => app.status === 'approved');
-        const declinedApps = applications.filter(app => app.status === 'declined');
-        
-        let html = '';
-        
-        if (approvedApps.length > 0) {
-            html += '<div style="margin-bottom: 40px;">';
-            html += '<h3 style="color: white; margin-bottom: 20px;"><i class="fas fa-check-circle"></i> Approved Cards (' + approvedApps.length + ')</h3>';
-            html += approvedApps.map(app => {
-                const card = db.creditCards.find(c => c.id === app.cardId);
-                if (!card) return '';
-                
-                return `
-                    <div class="card" style="margin-bottom: 15px; border-left: 5px solid #28a745;">
-                        <div class="card-body">
-                            <h3 style="margin: 0 0 10px; color: #28a745;"><i class="fas fa-trophy"></i> ${card.name}</h3>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; color: #333;">
-                                <div>
-                                    <strong>Issuer:</strong><br>
-                                    ${card.issuer}
-                                </div>
-                                <div>
-                                    <strong>Applied:</strong><br>
-                                    ${new Date(app.date).toLocaleDateString()}
-                                </div>
-                                <div>
-                                    <strong>Annual Fee:</strong><br>
-                                    $${card.annualFee}
-                                </div>
-                                <div>
-                                    <strong>Approval Odds:</strong><br>
-                                    <span style="color: #28a745; font-weight: bold;">${app.approvalOdds}%</span>
-                                </div>
-                            </div>
-                            <div style="display: flex; gap: 10px; margin-top: 15px; align-items: center;">
-                                <div style="flex: 1;">
-                                    <strong style="color: #333;">Status:</strong>
-                                    <span style="padding: 4px 12px; background: #d4edda; color: #28a745; border-radius: 20px; margin-left: 10px; font-weight: bold;">
-                                        APPROVED ✓
-                                    </span>
-                                </div>
-                                <button class="btn" style="padding: 8px 15px; width: auto; background: #dc3545;" onclick="cancelApplicationFromList(${card.id})">Cancel Card</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-            html += '</div>';
-        }
-        
-        if (declinedApps.length > 0) {
-            html += '<div style="margin-bottom: 40px;">';
-            html += '<h3 style="color: white; margin-bottom: 20px;"><i class="fas fa-times-circle"></i> Declined Applications (' + declinedApps.length + ')</h3>';
-            html += declinedApps.map(app => {
-                const card = db.creditCards.find(c => c.id === app.cardId);
-                if (!card) return '';
-                
-                return `
-                    <div class="card" style="margin-bottom: 15px; border-left: 5px solid #dc3545;">
-                        <div class="card-body">
-                            <h3 style="margin: 0 0 10px; color: #dc3545;"><i class="fas fa-ban"></i> ${card.name}</h3>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; color: #333;">
-                                <div>
-                                    <strong>Issuer:</strong><br>
-                                    ${card.issuer}
-                                </div>
-                                <div>
-                                    <strong>Applied:</strong><br>
-                                    ${new Date(app.date).toLocaleDateString()}
-                                </div>
-                                <div>
-                                    <strong>Annual Fee:</strong><br>
-                                    $${card.annualFee}
-                                </div>
-                                <div>
-                                    <strong>Approval Odds:</strong><br>
-                                    <span style="color: #dc3545; font-weight: bold;">${app.approvalOdds}%</span>
-                                </div>
-                            </div>
-                            <div style="display: flex; gap: 10px; margin-top: 15px; align-items: center;">
-                                <div style="flex: 1;">
-                                    <strong style="color: #333;">Status:</strong>
-                                    <span style="padding: 4px 12px; background: #f8d7da; color: #dc3545; border-radius: 20px; margin-left: 10px; font-weight: bold;">
-                                        DECLINED ✗
-                                    </span>
-                                </div>
-                                <button class="btn" style="padding: 8px 15px; width: auto; background: #ff9800;" onclick="reapplyFromList(${card.id})">Reapply</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-            html += '</div>';
-        }
-        
-        container.innerHTML = html;
-    } catch (error) {
-        console.error('Error loading applications:', error);
+        }).join('');
+        html += '</div>';
     }
-}
+    
+    if (declinedApps.length > 0) {
+        html += '<div style="margin-bottom: 40px;">';
+        html += '<h3 style="color: white; margin-bottom: 20px;">❌ Declined Applications (' + declinedApps.length + ')</h3>';
+        html += declinedApps.map(app => {
+            const card = db.creditCards.find(c => c.id === app.cardId);
+            if (!card) return '';
             
             const canReapply = db.canReapply(currentUser.id, card.id);
             const waitHours = canReapply ? 0 : db.getReapplyWaitTime(currentUser.id, card.id);
@@ -321,14 +272,4 @@ window.addEventListener('load', () => {
     window.cancelApplicationFromList = cancelApplicationFromList;
     window.reapplyFromList = reapplyFromList;
     window.updateSliderGradient = updateSliderGradient;
-    window.showApp = showApp;
-    window.showAuth = showAuth;
-    window.applyForCard = applyForCard;
-    window.findCards = findCards;
-    window.resetFilters = resetFilters;
-    window.calculateRewards = calculateRewards;
-    window.switchTab = switchTab;
-    window.handleLogin = handleLogin;
-    window.handleSignup = handleSignup;
-    window.logout = logout;
 });
