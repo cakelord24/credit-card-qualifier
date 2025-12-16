@@ -36,7 +36,7 @@ class SimpleDB {
                 issuer: "Chase",
                 type: "cashback",
                 annualFee: 0,
-                welcomeBonus: "$300 cash back",
+                welcomeBonus: "$200 cash back",
                 rewards: "1.5% on all purchases",
                 apr: "20.49%-29.24%",
                 creditRequired: 660,
@@ -600,10 +600,11 @@ class SimpleDB {
         const card = this.creditCards.find(c => c.id === cardId);
         const user = this.findUserById(userId);
         const creditScore = userCreditScore || (user ? user.creditScore : 300);
+        const income = user ? user.annualIncome : 0;
         
         let status = 'declined';
         
-        if (creditScore < card.creditRequired) {
+        if (creditScore < card.creditRequired || income < card.incomeRequired) {
             status = 'declined';
         } else {
             status = this.determineApprovalStatus(approvalOdds);
