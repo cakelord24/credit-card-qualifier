@@ -22,6 +22,21 @@ function showPage(page) {
     }
 }
 
+function showAuth() {
+    document.getElementById('authScreen').classList.add('active');
+    document.getElementById('authScreen').classList.remove('hidden');
+    document.getElementById('appScreen').classList.add('hidden');
+    document.getElementById('appScreen').classList.remove('active');
+}
+
+function showApp() {
+    document.getElementById('authScreen').classList.remove('active');
+    document.getElementById('authScreen').classList.add('hidden');
+    document.getElementById('appScreen').classList.remove('hidden');
+    document.getElementById('appScreen').classList.add('active');
+    updateUserInfo();
+}
+
 function updateUserInfo() {
     if (!currentUser) return;
     
