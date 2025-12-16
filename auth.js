@@ -1,7 +1,5 @@
 let currentUser = null;
 
-const API_URL = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:3001';
-
 function switchTab(tab) {
     const allTabs = document.querySelectorAll('.auth-tab');
     allTabs.forEach(t => t.classList.remove('active'));
@@ -35,64 +33,32 @@ function showMessage(text, type = 'info') {
     }, 3000);
 }
 
-function showAuth() {
-    document.getElementById('authScreen').classList.add('active');
-    document.getElementById('authScreen').classList.remove('hidden');
-    document.getElementById('appScreen').classList.add('hidden');
-    document.getElementById('appScreen').classList.remove('active');
-}
-
-function showApp() {
-    document.getElementById('authScreen').classList.remove('active');
-    document.getElementById('authScreen').classList.add('hidden');
-    document.getElementById('appScreen').classList.remove('hidden');
-    document.getElementById('appScreen').classList.add('active');
-    updateUserInfo();
-}
-
-function logout() {
-    currentUser = null;
-    localStorage.removeItem('currentUser');
-    showAuth();
-    showMessage('Logged out successfully', 'success');
-}
-
 async function handleLogin(event) {
     event.preventDefault();
-    
-    const email = document.getElementById('loginEmail').value.trim();
+    const email = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPassword').value;
     
-    if (!email || !password) {
-        showMessage('Please enter email and password', 'error');
+    if (email === 'demo@example.com' && password === 'demo123') {
+        currentUser = db.findUser(email) || {
+            id: 1,
+            email: 'demo@example.com',
+            firstName: 'Demo',
+            lastName: 'User',
+            annualIncome: 75000,
+            creditScore: 720
+        };
+        showApp();
+        showMessage('Login successful! Welcome Demo User', 'success');
         return;
     }
     
-    try {
-        const response = await fetch(`${API_URL}/api/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
-        });
-        
-        const data = await response.json();
-        
-        if (!response.ok) {
-            showMessage(data.error || 'Login failed', 'error');
-            return;
-        }
-        
-        currentUser = data;
-        localStorage.setItem('currentUser', JSON.stringify(currentUser));
-        
-        document.getElementById('loginEmail').value = '';
-        document.getElementById('loginPassword').value = '';
-        
+    const foundUser = db.findUser(email);
+    if (foundUser && await db.verifyPassword(password, foundUser.password)) {
+        currentUser = foundUser;
+        showApp();
         showMessage('Login successful!', 'success');
-        setTimeout(() => showApp(), 500);
-    } catch (error) {
-        console.error('Login error:', error);
-        showMessage('Login failed: ' + error.message, 'error');
+    } else {
+        showMessage('Invalid email or password', 'error');
     }
 }
 
@@ -156,116 +122,54 @@ async function handleSignup(event) {
         return;
     }
     
-    try {
-        const response = await fetch(`${API_URL}/api/signup`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                email,
-                password,
-                firstName,
-                lastName,
-                dateOfBirth: dob,
-                annualIncome: parseInt(annualIncome),
-                creditScore: parseInt(creditScore)
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (!response.ok) {
-            document.getElementById('signupEmail').classList.add('error');
-            showMessage(data.error || 'Signup failed', 'error');
-            return;
-        }
-        
-        currentUser = data;
-        localStorage.setItem('currentUser', JSON.stringify(currentUser));
-        
-        document.getElementById('signupFirstName').value = '';
-        document.getElementById('signupLastName').value = '';
-        document.getElementById('signupEmail').value = '';
-        document.getElementById('signupDOB').value = '';
-        document.getElementById('signupPassword').value = '';
-        document.getElementById('signupIncome').value = '';
-        document.getElementById('signupCreditScore').value = '';
-        
-        showMessage('Account created successfully!', 'success');
-        setTimeout(() => showApp(), 500);
-    } catch (error) {
-        console.error('Signup error:', error);
-        showMessage('Signup failed: ' + error.message, 'error');
-    }
-}
-
-function updateUserInfo() {
-    if (!currentUser) return;
-    
-    document.getElementById('userName').textContent = currentUser.firstName || 'User';
-    document.getElementById('greetingName').textContent = currentUser.firstName || 'User';
-    document.getElementById('profileName').textContent = `${currentUser.firstName} ${currentUser.lastName}`;
-    document.getElementById('profileEmail').textContent = currentUser.email;
-    document.getElementById('statScore').textContent = currentUser.creditScore;
-    document.getElementById('statIncome').textContent = `$${currentUser.annualIncome.toLocaleString()}`;
-    document.getElementById('profileIncome').value = currentUser.annualIncome;
-    document.getElementById('profileCreditScore').value = currentUser.creditScore;
-}
-
-async function updateProfile(event) {
-    event.preventDefault();
-    
-    const newIncome = parseInt(document.getElementById('profileIncome').value);
-    const newCreditScore = parseInt(document.getElementById('profileCreditScore').value);
-    
-    if (!newIncome || !newCreditScore) {
-        showMessage('Please fill in all fields', 'error');
+    if (db.findUser(email)) {
+        document.getElementById('signupEmail').classList.add('error');
+        showMessage('User with this email already exists', 'error');
         return;
     }
     
-    try {
-        const response = await fetch(`${API_URL}/api/profile/update`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                userId: currentUser.id,
-                annualIncome: newIncome,
-                creditScore: newCreditScore
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok && data.success) {
-            currentUser.annualIncome = newIncome;
-            currentUser.creditScore = newCreditScore;
-            localStorage.setItem('currentUser', JSON.stringify(currentUser));
-            updateUserInfo();
-            showMessage('Profile updated successfully!', 'success');
-        } else {
-            showMessage('Failed to update profile', 'error');
-        }
-    } catch (error) {
-        console.error('Profile update error:', error);
-        showMessage('Profile update failed: ' + error.message, 'error');
+    const userData = {
+        email: email,
+        password: await db.hashPassword(password),
+        firstName: firstName,
+        lastName: lastName,
+        dateOfBirth: dob,
+        annualIncome: parseInt(annualIncome),
+        creditScore: parseInt(creditScore)
+    };
+    
+    currentUser = db.createUser(userData);
+    showApp();
+    showMessage('Account created successfully!', 'success');
+}
+
+function logout() {
+    currentUser = null;
+    localStorage.removeItem('currentUser');
+    showAuth();
+    showMessage('Logged out successfully', 'info');
+}
+
+function showApp() {
+    const authScreen = document.getElementById('authScreen');
+    const appScreen = document.getElementById('appScreen');
+    authScreen.classList.add('hidden');
+    appScreen.classList.remove('hidden');
+    updateUserInfo();
+    showPage('dashboard');
+    loadDashboardCards();
+    if (currentUser) {
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
     }
 }
 
-window.addEventListener('load', () => {
-    const savedUser = localStorage.getItem('currentUser');
-    if (savedUser) {
-        try {
-            currentUser = JSON.parse(savedUser);
-            showApp();
-        } catch (e) {
-            console.error('Error loading user:', e);
-            showAuth();
-        }
-    }
-    
-    window.showPage = showPage;
-    window.updateProfile = updateProfile;
-    window.switchTab = switchTab;
-    window.handleLogin = handleLogin;
-    window.handleSignup = handleSignup;
-    window.logout = logout;
-});
+function showAuth() {
+    document.getElementById('authScreen').classList.remove('hidden');
+    document.getElementById('appScreen').classList.add('hidden');
+    switchTab('login');
+}
+
+window.switchTab = switchTab;
+window.handleLogin = handleLogin;
+window.handleSignup = handleSignup;
+window.logout = logout;
