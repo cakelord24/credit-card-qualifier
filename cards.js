@@ -109,6 +109,10 @@ function displayCards(cards, containerId) {
                         <span>${card.creditRequired}+</span>
                     </div>
                     <div class="card-feature">
+                        <span>Income Required:</span>
+                        <span>$${card.incomeRequired.toLocaleString()}+</span>
+                    </div>
+                    <div class="card-feature">
                         <span>Approval Odds:</span>
                         <span style="color: ${oddsColor}; font-weight: bold;">${odds}%</span>
                     </div>
