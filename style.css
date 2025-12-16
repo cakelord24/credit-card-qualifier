@@ -352,7 +352,7 @@ body::before {
     height: 8px;
     -webkit-appearance: none;
     appearance: none;
-    background: linear-gradient(to right, #667eea 0%, #667eea 60%, #ddd 60%, #ddd 100%);
+    background: transparent;
     border-radius: 5px;
     outline: none;
     margin: 15px 0;
@@ -371,7 +371,7 @@ body::before {
 }
 
 .range-slider::-webkit-slider-runnable-track {
-    background: #ddd;
+    background: transparent;
     border-radius: 5px;
 }
 
