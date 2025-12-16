@@ -370,6 +370,11 @@ body::before {
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
+.range-slider::-webkit-slider-runnable-track {
+    background: #ddd;
+    border-radius: 5px;
+}
+
 .range-slider::-moz-range-thumb {
     width: 20px;
     height: 20px;
@@ -383,6 +388,11 @@ body::before {
 .range-slider::-moz-range-track {
     background: transparent;
     border: none;
+}
+
+.range-slider::-moz-range-progress {
+    background: #667eea;
+    border-radius: 5px;
 }
 
 .message {
