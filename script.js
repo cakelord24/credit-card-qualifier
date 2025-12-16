@@ -320,4 +320,12 @@ window.addEventListener('load', () => {
     window.updateSliderGradient = updateSliderGradient;
     window.showApp = showApp;
     window.showAuth = showAuth;
+    window.applyForCard = applyForCard;
+    window.findCards = findCards;
+    window.resetFilters = resetFilters;
+    window.calculateRewards = calculateRewards;
+    window.switchTab = switchTab;
+    window.handleLogin = handleLogin;
+    window.handleSignup = handleSignup;
+    window.logout = logout;
 });
