@@ -1,6 +1,6 @@
 let currentUser = null;
 
-const API_URL = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:3001';
+const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
 
 function switchTab(tab) {
     const allTabs = document.querySelectorAll('.auth-tab');
