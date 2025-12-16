@@ -1,4 +1,4 @@
-const API_URL = typeof process !== 'undefined' && process.env ? (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:3001') : '';
+const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
 
 function calculateApprovalOdds(card) {
     if (!currentUser) return 50;
