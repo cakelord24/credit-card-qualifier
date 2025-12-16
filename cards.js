@@ -44,7 +44,8 @@ function displayCards(cards, containerId) {
         const oddsColor = odds > 70 ? '#28a745' : odds > 50 ? '#ffc107' : '#dc3545';
         
         const latestApplication = userApplications.find(app => app.cardId === card.id);
-        const creditScoreTooLow = currentUser && currentUser.creditScore < card.creditRequired;
+        const userCreditScore = currentUser ? currentUser.creditScore : 0;
+        const creditScoreTooLow = userCreditScore > 0 && userCreditScore < card.creditRequired;
         
         let buttonHTML = '';
         
