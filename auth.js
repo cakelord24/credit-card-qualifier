@@ -224,7 +224,7 @@ async function updateProfile(event) {
     
     try {
         
-        const response = await fetch(`/api/profile/update`, {
+        const response = await fetch(`/api/profile-update`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
